@@ -56,7 +56,6 @@ int main() {
 			for (auto i : sõnad) {
 				if (i == vastus) {
 					std::cout << std::endl << "\033[1;32mÕIGE\033[0m\n";
-					elud = 3;
 					õige_vastus = true;
 					
 					sõnad.erase(std::remove(sõnad.begin(), sõnad.end(), vastus), sõnad.end());
