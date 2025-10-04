@@ -1,0 +1,1 @@
+g++ main.cpp glad/src/gl.c -I ./glad/include/ -lglfw -lGL -I/usr/include/freetype2 -I/usr/include/freetype2 -L/usr/lib/x86_64-linux-gnu -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lfreetype

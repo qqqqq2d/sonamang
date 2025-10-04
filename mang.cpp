@@ -53,6 +53,8 @@ int main() {
 			std::cin >> vastus;
 			std::transform(vastus.begin(), vastus.end(), vastus.begin(), ::toupper);
 		
+			
+			
 			for (auto i : sõnad) {
 				if (i == vastus) {
 					std::cout << std::endl << "\033[1;32mÕIGE\033[0m\n";

@@ -7,20 +7,34 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <iostream>
-#include <map>
 #include <string>
 #include <fstream>
 #include <vector>
 #include <random>
 #include <algorithm>
+#include <sstream>
+#include <set>
+#include <map>
 
-//Sõna mängu osa
+std::string sõna;
+std::ifstream sonade_list("sonad.txt");
 
-std::vector<std::string> kombinatsioonid{};
-
-//Lugeda kombinatsioonid listist
 std::string kombinatsioon;
 std::ifstream kombinatsioonide_list("kombinatsioonid.txt");
+
+std::vector<std::string> kombinatsioonid{};
+std::vector<std::string> sõnad{};
+
+/*
+ONG KARTONG  KONG      KONGUS
+JAN KOOLJANA KORJAN    KUHJAN
+SED KUSED    KUULMISED PESEMISED
+*/
+
+
+int suvaline_kombinatsioon;
+std::random_device dev;
+std::mt19937 rng(dev());
 
 std::string sõnavahetus() {
 
@@ -28,19 +42,80 @@ std::string sõnavahetus() {
 		kombinatsioonid.push_back(kombinatsioon);
 	}
 
-	int suvaline_kombinatsioon;
-	std::random_device dev;
-	std::mt19937 rng(dev());
-
 	std::uniform_int_distribution<std::mt19937::result_type> kombinatsiooni_vahemik(0,kombinatsioonid.size()-1);
 	
 	suvaline_kombinatsioon = kombinatsiooni_vahemik(rng);
 	
-	std::string rnames = kombinatsioonid[suvaline_kombinatsioon];
-	
-	//kombinatsioonid.erase(std::remove(kombinatsioonid.begin(), kombinatsioonid.end(), rnames), kombinatsioonid.end());
-	
 	return kombinatsioonid[suvaline_kombinatsioon];
+}
+
+struct KeyMapping {
+    int glfw_key;
+    std::string character; // Using std::string for UTF-8 support
+};
+
+KeyMapping key_map[] = {
+    {GLFW_KEY_A, "A"},
+    {GLFW_KEY_B, "B"},
+    {GLFW_KEY_C, "C"},
+    {GLFW_KEY_D, "D"},
+    {GLFW_KEY_E, "E"},
+    {GLFW_KEY_F, "F"},
+    {GLFW_KEY_G, "G"},
+    {GLFW_KEY_H, "H"},
+    {GLFW_KEY_I, "I"},
+    {GLFW_KEY_J, "J"},
+    {GLFW_KEY_K, "K"},
+    {GLFW_KEY_L, "L"},
+    {GLFW_KEY_M, "M"},
+    {GLFW_KEY_N, "N"},
+    {GLFW_KEY_O, "O"},
+    {GLFW_KEY_P, "P"},
+    {GLFW_KEY_Q, "Q"},
+    {GLFW_KEY_R, "R"},
+    {GLFW_KEY_S, "S"},
+    {GLFW_KEY_T, "T"},
+    {GLFW_KEY_U, "U"},
+    {GLFW_KEY_V, "V"},
+    {GLFW_KEY_W, "W"},
+    {GLFW_KEY_X, "X"},
+    {GLFW_KEY_Y, "Y"},
+    {GLFW_KEY_Z, "Z"},
+    {GLFW_KEY_S, "Š"}, // Assuming AltGr+S for Š (adjust as needed)
+    {GLFW_KEY_Z, "Ž"}, // Assuming AltGr+Z for Ž (adjust as needed)
+    {GLFW_KEY_GRAVE_ACCENT, "Õ"}, // Estonian Õ on ~ key
+    {GLFW_KEY_APOSTROPHE, "Ä"},   // Estonian Ä on " key
+    {GLFW_KEY_SEMICOLON, "Ö"},    // Estonian Ö on ; key
+    {GLFW_KEY_LEFT_BRACKET, "Ü"}  // Estonian Ü on [ key
+};
+
+// Convert UTF-8 string to vector of Unicode code points
+std::vector<FT_UInt> decodeUTF8(const std::string& text) {
+    std::vector<FT_UInt> codePoints;
+    size_t i = 0;
+    while (i < text.size()) {
+        FT_UInt codePoint = 0;
+        unsigned char c = text[i];
+
+        if (c < 0x80) { // 1-byte (ASCII)
+            codePoint = c;
+            i += 1;
+        } else if ((c & 0xE0) == 0xC0) { // 2-byte
+            codePoint = ((c & 0x1F) << 6) | (text[i + 1] & 0x3F);
+            i += 2;
+        } else if ((c & 0xF0) == 0xE0) { // 3-byte
+            codePoint = ((c & 0x0F) << 12) | ((text[i + 1] & 0x3F) << 6) | (text[i + 2] & 0x3F);
+            i += 3;
+        } else if ((c & 0xF8) == 0xF0) { // 4-byte
+            codePoint = ((c & 0x07) << 18) | ((text[i + 1] & 0x3F) << 12) | ((text[i + 2] & 0x3F) << 6) | (text[i + 3] & 0x3F);
+            i += 4;
+        } else {
+            i += 1;
+            continue;
+        }
+        codePoints.push_back(codePoint);
+    }
+    return codePoints;
 }
 
 // Camera class
@@ -72,6 +147,10 @@ bool firstMouse = true;
 float lastX = 400, lastY = 300;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+float fps = 0.0f;
+float fpsUpdateInterval = 0.5f;
+float fpsAccumulatedTime = 0.0f;
+int frameCount = 0;
 
 // Structure to hold character data
 struct Character {
@@ -107,40 +186,80 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     camera.updateCameraVectors();
 }
 
-// Process keyboard input
+std::string input_text = "";
 
-std::string text = sõnavahetus();
-bool SPACE_PRESSED = false;
+//std::vector<std::string, 32> tähed = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "E", "S", "Š", "Z", "Ž", "T", "U", "V", "W", "Õ", "Ä", "Ö", "Ü", "X", "Y"};
+
+std::vector<bool> täht_vajutatud{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+bool SPACE_PRESSED;
+bool ENTER_PRESSED;
+bool text_entered = false;
+std::string kombinatsiooni_text = sõnavahetus();
 
 void processInput(GLFWwindow* window) {
     float cameraSpeed = 2.5f * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.position += cameraSpeed * camera.front;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.position -= cameraSpeed * camera.front;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.position -= glm::normalize(glm::cross(camera.front, camera.up)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.position += glm::normalize(glm::cross(camera.front, camera.up)) * cameraSpeed;
+    
+    for (int i = 0; i < 32; i++) {
+        int key = key_map[i].glfw_key;
+        // Check for modifier (e.g., AltGr for Š and Ž)
+        bool is_special_key = (i >= 26); // Š, Ž, Õ, Ä, Ö, Ü
+        bool modifier_pressed = is_special_key ? (glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS) : true;
+        
+        if (glfwGetKey(window, key) == GLFW_PRESS && modifier_pressed && !täht_vajutatud[i]) {
+            täht_vajutatud[i] = true;
+            input_text += key_map[i].character;
+        }
+        if (glfwGetKey(window, key) == GLFW_RELEASE) {
+            täht_vajutatud[i] = false;
+        }
+    } 
+    
+    if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
+        input_text = "";
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && (!ENTER_PRESSED)) {
+        ENTER_PRESSED = true;
+        text_entered = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_RELEASE) {
+        ENTER_PRESSED = false;
+        text_entered = false;
+    }
+    
+    /*        
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && (!SPACE_PRESSED)) {
-    	SPACE_PRESSED = true;
-    	text = sõnavahetus();
+        SPACE_PRESSED = true;
+        text = sõnavahetus();
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-    	SPACE_PRESSED = false;
+        SPACE_PRESSED = false;
     }
+    */
+    
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
 
 // Function to render text
-void renderText(unsigned int shaderProgram, std::map<char, Character>& characters, std::string text, float x, float y, float z, float scale, glm::mat4 view, glm::mat4 projection) {
+void renderText(unsigned int shaderProgram, std::map<FT_UInt, Character>& characters, std::string text, float x, float y, float z, float scale, glm::mat4 view, glm::mat4 projection, bool is2D = false) {
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+    // Use orthographic projection for 2D, perspective for 3D
+    glm::mat4 proj = is2D ? glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f) : projection;
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Disable depth test for 2D rendering to ensure overlay
+    if (is2D) {
+        glDisable(GL_DEPTH_TEST);
+    } else {
+        glEnable(GL_DEPTH_TEST);
+    }
 
     unsigned int VAO, VBO;
     glGenVertexArrays(1, &VAO);
@@ -153,16 +272,20 @@ void renderText(unsigned int shaderProgram, std::map<char, Character>& character
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // Number of layers for 3D effect
-    int numLayers = 5;
-    float depthStep = 0.05f; // Small z-offset per layer
+    // Decode UTF-8 string to Unicode code points
+    std::vector<FT_UInt> codePoints = decodeUTF8(text);
     float x_offset = x;
 
-    for (char c : text) {
-        Character ch = characters[c];
+    for (FT_UInt c : codePoints) {
+        auto it = characters.find(c);
+        if (it == characters.end()) {
+            std::cerr << "WARNING: Glyph not found for code point " << c << std::endl;
+            continue;
+        }
+        Character ch = it->second;
 
         float xpos = x_offset + ch.bearing.x * scale;
-        float ypos = y - (ch.size.y - ch.bearing.y) * scale;
+        float ypos = is2D ? (600.0f - y - (ch.size.y - ch.bearing.y) * scale) : (y - (ch.size.y - ch.bearing.y) * scale);
         float w = ch.size.x * scale;
         float h = ch.size.y * scale;
 
@@ -175,15 +298,31 @@ void renderText(unsigned int shaderProgram, std::map<char, Character>& character
             { xpos + w, ypos + h, 1.0f, 0.0f }
         };
 
-        // Render multiple layers
-        for (int i = 0; i < numLayers; ++i) {
-            float depth = z - i * depthStep;
-            // Gradually darken the color for deeper layers
-            float colorFactor = 1.0f - (i * 0.15f); // Darken by 15% per layer
-            glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), colorFactor, colorFactor, colorFactor);
+        // Render multiple layers for 3D effect, only in 3D mode
+        if (!is2D) {
+            int numLayers = 5;
+            float depthStep = 0.05f;
+            for (int i = 0; i < numLayers; ++i) {
+                float depth = z - i * depthStep;
+                float colorFactor = 1.0f - (i * 0.15f);
+                glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), colorFactor, colorFactor, colorFactor);
 
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(0.0f, 0.0f, depth));
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                glBindTexture(GL_TEXTURE_2D, ch.textureID);
+                glBindVertexArray(VAO);
+                glBindBuffer(GL_ARRAY_BUFFER, VBO);
+                glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+                glBindVertexArray(0);
+            }
+        } else {
+            // Single layer for 2D
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(0.0f, 0.0f, depth));
+            model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
             glBindTexture(GL_TEXTURE_2D, ch.textureID);
@@ -202,10 +341,12 @@ void renderText(unsigned int shaderProgram, std::map<char, Character>& character
     glBindTexture(GL_TEXTURE_2D, 0);
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+
     glDisable(GL_BLEND);
 }
 
 int main() {
+
     // Initialize GLFW
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -217,12 +358,16 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL 3D Text", nullptr, nullptr);
+    glfwSetWindowAttrib(window, GLFW_RESIZABLE, true);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
+    
+    // Vsync
+	//glfwSwapInterval( 0 );
 
     // Initialize GLAD
     if (!gladLoadGL(glfwGetProcAddress)) {
@@ -244,10 +389,7 @@ int main() {
     }
 
     FT_Face face;
-    // Try DejaVuSans.ttf (Ubuntu default) or arial.ttf if installed
-    // Use /usr/share/fonts/truetype/msttcorefonts/arial.ttf if ttf-mscorefonts-installer is installed
-    // Or copy a .ttf file to the project directory and use ./filename.ttf
-    if (FT_New_Face(ft, "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 0, &face)) {
+    if (FT_New_Face(ft, "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf", 0, &face)) {
         std::cerr << "ERROR::FREETYPE: Failed to load font" << std::endl;
         glfwTerminate();
         return -1;
@@ -256,10 +398,10 @@ int main() {
     FT_Set_Pixel_Sizes(face, 0, 48);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    std::map<char, Character> characters;
-    for (unsigned char c = 0; c < 128; c++) {
+    std::map<FT_UInt, Character> characters;
+    for (FT_UInt c = 0; c <= 0xFF; ++c) {
         if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-            std::cerr << "ERROR::FREETYPE: Failed to load Glyph" << std::endl;
+            std::cerr << "ERROR::FREETYPE: Failed to load Glyph for code point " << c << std::endl;
             continue;
         }
 
@@ -326,11 +468,89 @@ int main() {
 
     glEnable(GL_DEPTH_TEST);
 
+	// Mängu ettevalmistamine	
+
+    int elud = 3;
+	bool vastus = true;
+    
+    std::random_device dev;
+    std::mt19937 rng(dev());	
+	
+	// Miks set ja mitte vector?
+	
+	std::vector<std::string> kombinatsiooni_sõnad{};
+	std::string vaadeldav_sõna;
+	
+	while (std::getline (sonade_list, sõna)) {
+		sõnad.push_back(sõna);
+	}
+	
+	int kombinatsiooni_sõnade_suurus = 50000;
     // Main loop
     while (!glfwWindowShouldClose(window)) {
+    
+    	//vastus = false;
+    	// Mängu osa
+    	
+    	/*
+    	while (std::getline (sonade_list, sõna)) {
+    		vaadeldav_sõna = sõna;
+    		size_t pos = vaadeldav_sõna.find(kombinatsiooni_text);
+    		if (pos != std::string::npos) {
+    			kombinatsiooni_sõnad.push_back(vaadeldav_sõna);
+    			std::cout << "hello" << std::endl;
+    		}
+    	}
+    	*/
+		
+        if (kombinatsiooni_sõnad.size() < kombinatsiooni_sõnade_suurus) {
+			for (auto i : sõnad) {
+				size_t pos = i.find(kombinatsiooni_text);
+				if (pos != std::string::npos) {
+					kombinatsiooni_sõnad.push_back(i);
+					
+					//std::cout << "hello" << std::endl;
+				}
+			}
+			kombinatsiooni_sõnade_suurus = kombinatsiooni_sõnad.size();
+    	}   	  	
+    	std::cout << kombinatsiooni_sõnad.size() << std::endl;			
+    	    	
+    	if (text_entered == true) {
+    		vastus = false;
+			for (auto i : kombinatsiooni_sõnad) {
+				if (i == input_text) {
+					//std::cout << "hello" << std::endl;
+					sõnad.erase(std::remove(sõnad.begin(), sõnad.end(), input_text), sõnad.end());
+					//input_text = "";
+					kombinatsiooni_text = sõnavahetus();
+					kombinatsiooni_sõnad.clear();
+					kombinatsiooni_sõnade_suurus = 50000;
+					vastus = true;				
+				}			
+			}
+			if (input_text != "" && vastus == false) {
+				elud--;
+			}		
+			input_text = "";	
+		}
+		if (elud == 0) {
+			exit(1);
+		}
+			
+    	
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        // Calculate FPS
+        fpsAccumulatedTime += deltaTime;
+        frameCount++;
+        if (fpsAccumulatedTime >= fpsUpdateInterval) {
+            fps = frameCount / fpsAccumulatedTime;
+            frameCount = 0;
+            fpsAccumulatedTime = 0.0f;
+        }
 
         processInput(window);
 
@@ -343,11 +563,17 @@ int main() {
         glUseProgram(shaderProgram);
         glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), 1.0f, 1.0f, 1.0f);
 
+        // Render 3D text
+        renderText(shaderProgram, characters, kombinatsiooni_text, -2.2f, 0.0f, 0.0f, 0.02f, view, projection, false);
+
+        // Render FPS as 2D text
+        std::stringstream fpsText;
+        fpsText << "FPS: " << static_cast<float>(fps);
+        glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), 1.0f, 1.0f, 0.0f); // Yellow for FPS
+        renderText(shaderProgram, characters, fpsText.str(), 10.0f, 20.0f, 0.0f, 0.5f, glm::mat4(1.0f), projection, true);
         
-        // Render "Hello World" at position (-2, 0, 0) with scale 0.02
-        renderText(shaderProgram, characters, text, -2.2f, 0.0f, 0.0f, 0.02f, view, projection);
-		renderText(shaderProgram, characters, "10", -2.0f, 2.0f, 0.0f, 0.02f, view, projection);
-	
+        renderText(shaderProgram, characters, input_text, 300.0f, 500.0f, 100.0f, 2.0f, glm::mat4(1.0f), projection, true);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
