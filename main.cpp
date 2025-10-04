@@ -25,12 +25,6 @@ std::ifstream kombinatsioonide_list("kombinatsioonid.txt");
 std::vector<std::string> kombinatsioonid{};
 std::vector<std::string> sõnad{};
 
-/*
-ONG KARTONG  KONG      KONGUS
-JAN KOOLJANA KORJAN    KUHJAN
-SED KUSED    KUULMISED PESEMISED
-*/
-
 
 int suvaline_kombinatsioon;
 std::random_device dev;
@@ -186,11 +180,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     camera.updateCameraVectors();
 }
 
-std::string input_text = "";
-
 //std::vector<std::string, 32> tähed = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "E", "S", "Š", "Z", "Ž", "T", "U", "V", "W", "Õ", "Ä", "Ö", "Ü", "X", "Y"};
 
 std::vector<bool> täht_vajutatud{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+std::string input_text = "";
 
 bool SPACE_PRESSED;
 bool ENTER_PRESSED;
@@ -396,6 +390,60 @@ void renderText(unsigned int shaderProgram, std::map<FT_UInt, Character>& charac
     glDisable(GL_BLEND);
 }
 
+void renderSquare(unsigned int shaderProgram, unsigned int whiteTexture, float x, float y, float size, glm::vec3 color) {
+    glUseProgram(shaderProgram);
+    glm::mat4 view = glm::mat4(1.0f);  // No camera transform for 2D
+    glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);  // 2D projection
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniform3fv(glGetUniformLocation(shaderProgram, "textColor"), 1, glm::value_ptr(color));
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_DEPTH_TEST);  // Important for 2D overlay
+
+    unsigned int VAO, VBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    float halfSize = size / 2.0f;
+    float vertices[6][4] = {
+        { x - halfSize, y - halfSize, 0.0f, 0.0f },  // Bottom-left
+        { x + halfSize, y - halfSize, 1.0f, 0.0f },  // Bottom-right
+        { x + halfSize, y + halfSize, 1.0f, 1.0f },  // Top-right
+        { x - halfSize, y - halfSize, 0.0f, 0.0f },  // Bottom-left
+        { x + halfSize, y + halfSize, 1.0f, 1.0f },  // Top-right
+        { x - halfSize, y + halfSize, 0.0f, 1.0f }   // Top-left
+    };
+
+    // Note: If your 2D text flips y (as in renderText), adjust vertices y to 600.0f - y if needed for top-left origin
+    // Example flipped: { x - halfSize, 600.0f - (y + halfSize), 0.0f, 0.0f } for top-left, etc.
+
+    glm::mat4 model = glm::mat4(1.0f);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+    glBindTexture(GL_TEXTURE_2D, whiteTexture);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+
+    glDisable(GL_BLEND);
+}
+
 int main() {
 
     // Initialize GLFW
@@ -408,8 +456,8 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL 3D Text", nullptr, nullptr);
-    glfwSetWindowAttrib(window, GLFW_RESIZABLE, true);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Sõna mäng", nullptr, nullptr);
+    glfwSetWindowAttrib(window, GLFW_RESIZABLE, false);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -475,6 +523,17 @@ int main() {
     }
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
+
+	unsigned int whiteTexture;
+	glGenTextures(1, &whiteTexture);
+	glBindTexture(GL_TEXTURE_2D, whiteTexture);
+	unsigned char whitePixel = 255;  // White for full opacity
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 1, 1, 0, GL_RED, GL_UNSIGNED_BYTE, &whitePixel);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
     // Shaders
     const char* vertexShaderSource = R"(
@@ -586,6 +645,7 @@ int main() {
 				elud--;
 				elutext = "Elud: ";
 				elutext += std::to_string(elud);
+				kombinatsiooni_text = sõnavahetus();
 			}		
 			input_text = "";	
 		}
@@ -631,6 +691,10 @@ int main() {
         renderText(shaderProgram, characters, fpsText.str(), 10.0f, 20.0f, 0.0f, 0.5f, glm::mat4(1.0f), projection, true);
         
         renderText(shaderProgram, characters, input_text, 80.0f, 500.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true);
+        
+        renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 5.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        
+        //renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 1000.0f, glm::vec3(0.5f, 0.0f, 0.0f));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -639,6 +703,7 @@ int main() {
     // Cleanup
     for (auto& pair : characters) {
         glDeleteTextures(1, &pair.second.textureID);
+        glDeleteTextures(1, &whiteTexture);
     }
     glDeleteProgram(shaderProgram);
     glfwTerminate();
