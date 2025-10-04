@@ -81,12 +81,12 @@ KeyMapping key_map[] = {
     {GLFW_KEY_X, "X"},
     {GLFW_KEY_Y, "Y"},
     {GLFW_KEY_Z, "Z"},
-    {GLFW_KEY_S, "Š"}, // Assuming AltGr+S for Š (adjust as needed)
-    {GLFW_KEY_Z, "Ž"}, // Assuming AltGr+Z for Ž (adjust as needed)
-    {GLFW_KEY_GRAVE_ACCENT, "Õ"}, // Estonian Õ on ~ key
-    {GLFW_KEY_APOSTROPHE, "Ä"},   // Estonian Ä on " key
-    {GLFW_KEY_SEMICOLON, "Ö"},    // Estonian Ö on ; key
-    {GLFW_KEY_LEFT_BRACKET, "Ü"}  // Estonian Ü on [ key
+    {GLFW_KEY_1, "Š"}, // Assuming AltGr+S for Š (adjust as needed)
+    {GLFW_KEY_2, "Ž"}, // Assuming AltGr+Z for Ž (adjust as needed)
+    {GLFW_KEY_SPACE, "Õ"}, // Estonian Õ on ~ key
+    {GLFW_KEY_4, "Ä"},   // Estonian Ä on " key
+    {GLFW_KEY_5, "Ö"},    // Estonian Ö on ; key
+    {GLFW_KEY_6, "Ü"}  // Estonian Ü on [ key
 };
 
 // Convert UTF-8 string to vector of Unicode code points
@@ -471,6 +471,8 @@ int main() {
 	// Mängu ettevalmistamine	
 
     int elud = 3;
+    std::string elutext = "Elud: ";
+    elutext += std::to_string(elud);
 	bool vastus = true;
     
     std::random_device dev;
@@ -514,7 +516,7 @@ int main() {
 			}
 			kombinatsiooni_sõnade_suurus = kombinatsiooni_sõnad.size();
     	}   	  	
-    	std::cout << kombinatsiooni_sõnad.size() << std::endl;			
+    	//std::cout << kombinatsiooni_sõnad.size() << std::endl;			
     	    	
     	if (text_entered == true) {
     		vastus = false;
@@ -531,6 +533,8 @@ int main() {
 			}
 			if (input_text != "" && vastus == false) {
 				elud--;
+				elutext = "Elud: ";
+				elutext += std::to_string(elud);
 			}		
 			input_text = "";	
 		}
@@ -564,7 +568,10 @@ int main() {
         glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), 1.0f, 1.0f, 1.0f);
 
         // Render 3D text
-        renderText(shaderProgram, characters, kombinatsiooni_text, -2.2f, 0.0f, 0.0f, 0.02f, view, projection, false);
+        renderText(shaderProgram, characters, kombinatsiooni_text, -3.0f, 0.0f, 0.0f, 0.02f, view, projection, false);
+        
+        // Render elude text
+		renderText(shaderProgram, characters, elutext, -3.0f, -1.0f, 0.0f, 0.01f, view, projection, false);
 
         // Render FPS as 2D text
         std::stringstream fpsText;
@@ -572,7 +579,7 @@ int main() {
         glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), 1.0f, 1.0f, 0.0f); // Yellow for FPS
         renderText(shaderProgram, characters, fpsText.str(), 10.0f, 20.0f, 0.0f, 0.5f, glm::mat4(1.0f), projection, true);
         
-        renderText(shaderProgram, characters, input_text, 300.0f, 500.0f, 100.0f, 2.0f, glm::mat4(1.0f), projection, true);
+        renderText(shaderProgram, characters, input_text, 80.0f, 500.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
