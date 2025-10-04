@@ -1,6 +1,6 @@
 #include <glad/gl.h>
 #include <stdio.h>
-#include </home/mattias/prog/sona_mang/glfw-3.4/include/GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -389,7 +389,7 @@ int main() {
     }
 
     FT_Face face;
-    if (FT_New_Face(ft, "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf", 0, &face)) {
+    if (FT_New_Face(ft, "./LiberationMono-Regular.ttf", 0, &face)) {
         std::cerr << "ERROR::FREETYPE: Failed to load font" << std::endl;
         glfwTerminate();
         return -1;
