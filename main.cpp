@@ -194,26 +194,77 @@ std::vector<bool> täht_vajutatud{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 bool SPACE_PRESSED;
 bool ENTER_PRESSED;
+
 bool text_entered = false;
 std::string kombinatsiooni_text = sõnavahetus();
 
 void processInput(GLFWwindow* window) {
     float cameraSpeed = 2.5f * deltaTime;
     
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < 26; i++) {
         int key = key_map[i].glfw_key;
-        // Check for modifier (e.g., AltGr for Š and Ž)
-        bool is_special_key = (i >= 26); // Š, Ž, Õ, Ä, Ö, Ü
-        bool modifier_pressed = is_special_key ? (glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS) : true;
         
-        if (glfwGetKey(window, key) == GLFW_PRESS && modifier_pressed && !täht_vajutatud[i]) {
+        if (glfwGetKey(window, key) == GLFW_PRESS && !täht_vajutatud[i]) {
             täht_vajutatud[i] = true;
             input_text += key_map[i].character;
         }
         if (glfwGetKey(window, key) == GLFW_RELEASE) {
             täht_vajutatud[i] = false;
         }
+    }
+    // Ö Special case
+    if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_PRESS && (!täht_vajutatud[26])) {
+    	täht_vajutatud[26] = true;
+    	input_text += "Ö";
+    }
+    if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_RELEASE) {
+        täht_vajutatud[26] = false;
+    }
+    
+     // Ü Special case
+    if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET ) == GLFW_PRESS && (!täht_vajutatud[27])) {
+    	täht_vajutatud[27] = true;
+    	input_text += "Ü";
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET ) == GLFW_RELEASE) {
+        täht_vajutatud[27] = false;
+    }
+    
+    // Õ Special case
+    if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET  ) == GLFW_PRESS && (!täht_vajutatud[28])) {
+    	täht_vajutatud[28] = true;
+    	input_text += "Õ";
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET  ) == GLFW_RELEASE) {
+        täht_vajutatud[28] = false;
+    }
+    // Ä Special case
+    if (glfwGetKey(window, GLFW_KEY_APOSTROPHE   ) == GLFW_PRESS && (!täht_vajutatud[29])) {
+    	täht_vajutatud[29] = true;
+    	input_text += "Ä";
+    }
+    if (glfwGetKey(window, GLFW_KEY_APOSTROPHE   ) == GLFW_RELEASE) {
+        täht_vajutatud[29] = false;
     } 
+    
+    // Š Special case
+    if (glfwGetKey(window, GLFW_KEY_1   ) == GLFW_PRESS && (!täht_vajutatud[30])) {
+    	täht_vajutatud[30] = true;
+    	input_text += "Š";
+    }
+    if (glfwGetKey(window, GLFW_KEY_1   ) == GLFW_RELEASE) {
+        täht_vajutatud[30] = false;
+    }
+    
+    // Ž Special case
+    if (glfwGetKey(window, GLFW_KEY_2   ) == GLFW_PRESS && (!täht_vajutatud[31])) {
+    	täht_vajutatud[31] = true;
+    	input_text += "Ž";
+    }
+    if (glfwGetKey(window, GLFW_KEY_2   ) == GLFW_RELEASE) {
+        täht_vajutatud[31] = false;
+    }
+    
     
     if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
         input_text = "";
