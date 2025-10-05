@@ -16,6 +16,7 @@
 #include <set>
 #include <map>
 
+
 std::string sõna;
 std::ifstream sonade_list("sonad.txt");
 
@@ -39,11 +40,14 @@ std::string sõnavahetus() {
     return kombinatsioonid[suvaline_kombinatsioon];
 }
 
-void flash_effect(float &opacity) {
+void vilkumine(float &opacity, std::string choice, float multiplier) {
 	//               
-
-	opacity += 0.01f;
-
+	
+	if (choice == "up")
+		opacity += 0.01f * multiplier;
+	else {
+		opacity -= 0.01f * multiplier; 
+	}
 }
 
 void näita_sõnu(std::vector<std::string> sõnad) {
@@ -164,12 +168,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 }
 
 std::vector<bool> täht_vajutatud(32, false);
-std::string input_text = "";
+std::string sisendi_tekst = "";
 bool SPACE_PRESSED = false;
 bool ENTER_PRESSED = false;
 bool text_entered = false;
-std::string kombinatsiooni_text = sõnavahetus();
-//std::string kombinatsiooni_text = "KAL";
+std::string kombinatsiooni_tekst = sõnavahetus();
+//std::string kombinatsiooni_tekst = "KAL";
 
 void processInput(GLFWwindow* window) {
     float cameraSpeed = 2.5f * deltaTime;
@@ -178,7 +182,7 @@ void processInput(GLFWwindow* window) {
         int key = key_map[i].glfw_key;
         if (glfwGetKey(window, key) == GLFW_PRESS && !täht_vajutatud[i]) {
             täht_vajutatud[i] = true;
-            input_text += key_map[i].character;
+            sisendi_tekst += key_map[i].character;
         }
         if (glfwGetKey(window, key) == GLFW_RELEASE) {
             täht_vajutatud[i] = false;
@@ -186,48 +190,48 @@ void processInput(GLFWwindow* window) {
     }
     if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_PRESS && !täht_vajutatud[26]) {
         täht_vajutatud[26] = true;
-        input_text += "Ö";
+        sisendi_tekst += "Ö";
     }
     if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_RELEASE) {
         täht_vajutatud[26] = false;
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS && !täht_vajutatud[27]) {
         täht_vajutatud[27] = true;
-        input_text += "Ü";
+        sisendi_tekst += "Ü";
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_RELEASE) {
         täht_vajutatud[27] = false;
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS && !täht_vajutatud[28]) {
         täht_vajutatud[28] = true;
-        input_text += "Õ";
+        sisendi_tekst += "Õ";
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE) {
         täht_vajutatud[28] = false;
     }
     if (glfwGetKey(window, GLFW_KEY_APOSTROPHE) == GLFW_PRESS && !täht_vajutatud[29]) {
         täht_vajutatud[29] = true;
-        input_text += "Ä";
+        sisendi_tekst += "Ä";
     }
     if (glfwGetKey(window, GLFW_KEY_APOSTROPHE) == GLFW_RELEASE) {
         täht_vajutatud[29] = false;
     }
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !täht_vajutatud[30]) {
         täht_vajutatud[30] = true;
-        input_text += "Š";
+        sisendi_tekst += "Š";
     }
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE) {
         täht_vajutatud[30] = false;
     }
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !täht_vajutatud[31]) {
         täht_vajutatud[31] = true;
-        input_text += "Ž";
+        sisendi_tekst += "Ž";
     }
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
         täht_vajutatud[31] = false;
     }
     if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
-        input_text = "";
+        sisendi_tekst = "";
     }
     if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && !ENTER_PRESSED) {
         ENTER_PRESSED = true;
@@ -370,6 +374,8 @@ void renderSquare(unsigned int shaderProgram, unsigned int whiteTexture, float x
 }
 
 int main() {
+
+
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return -1;
@@ -385,6 +391,7 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window);
+    //glfwSwapInterval( 0 );
     if (!gladLoadGL(glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         glfwTerminate();
@@ -489,13 +496,17 @@ int main() {
     float whole_scene_opacity = 0.0f;
     bool sõnad_push_back_done = false;
     
+    //Vilkumine muutujad
+    bool opacity_up = true;
+    bool vale_vastus_vilkumine = false;
+    
     while (!glfwWindowShouldClose(window)) {
     	totalFrames++;
     	//std::cout << totalFrames << std::endl;
     
         if (!sõnad_push_back_done) {
             for (auto i : sõnad) {
-                size_t pos = i.find(kombinatsiooni_text);
+                size_t pos = i.find(kombinatsiooni_tekst);
                 if (pos != std::string::npos) {
                     kombinatsiooni_sõnad.push_back(i);
                 }
@@ -506,39 +517,58 @@ int main() {
         if (text_entered) {
             vastus = false;
             for (auto i : kombinatsiooni_sõnad) {
-                if (i == input_text) {
-                    sõnad.erase(std::remove(sõnad.begin(), sõnad.end(), input_text), sõnad.end());
-                    
-                    kombinatsiooni_text = sõnavahetus();
+                if (i == sisendi_tekst) {
+                    sõnad.erase(std::remove(sõnad.begin(), sõnad.end(), sisendi_tekst), sõnad.end());
+        
+                    kombinatsiooni_tekst = sõnavahetus();
                     kombinatsiooni_sõnad.clear();
                     sõnad_push_back_done = false;
                     vastus = true;
                     break;
                 }
             }
-            if (input_text != "" && !vastus) {
+            if (sisendi_tekst != "" && !vastus) {
                 elud--;
                 elutext = "Elud: " + std::to_string(elud);
                 
-                kombinatsiooni_text = sõnavahetus();
+                kombinatsiooni_tekst = sõnavahetus();
                 kombinatsiooni_sõnad.clear();
                 sõnad_push_back_done = false;
+                
+                vale_vastus_vilkumine = true;
+                
             }
-            input_text = "";
+            sisendi_tekst = "";
         }
         if (elud == 0) {
-        
-        	// Red flash
-            //whole_scene_opacity += 0.01f;
-            flash_effect(whole_scene_opacity);
-            
+       		       
         }
         
+        if (vale_vastus_vilkumine) {
+        	if (opacity_up)            	        	
+            	vilkumine(whole_scene_opacity, "up", 5);
+            if (whole_scene_opacity >= 0.75f) {
+            	opacity_up = false;
+            }
+            if (!opacity_up) {
+            	vilkumine(whole_scene_opacity, "down", 0.7);
+            }
+            if (whole_scene_opacity <= 0) {
+            	whole_scene_opacity = 0.0f;
+            	vale_vastus_vilkumine = false;
+            	opacity_up = true;
+            }
+        }
+         
+ 		std::cout << whole_scene_opacity << std::endl;
+ 		
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         fpsAccumulatedTime += deltaTime;
         frameCount++;
+        
+        //std::cout << currentFrame << std::endl;
         
         if (fpsAccumulatedTime >= fpsUpdateInterval) {
             fps = frameCount / fpsAccumulatedTime;
@@ -552,13 +582,13 @@ int main() {
         glm::mat4 projection = glm::perspective(glm::radians(camera.fov), 800.0f / 600.0f, 0.1f, 100.0f);
         glUseProgram(shaderProgram);
         glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), 1.0f, 1.0f, 1.0f);
-        renderText(shaderProgram, characters, kombinatsiooni_text, -3.0f, 0.0f, 0.0f, 0.02f, view, projection, false, 1.0f);
+        renderText(shaderProgram, characters, kombinatsiooni_tekst, -3.0f, 0.0f, 0.0f, 0.02f, view, projection, false, 1.0f);
         renderText(shaderProgram, characters, elutext, -3.0f, -1.0f, 0.0f, 0.01f, view, projection, false, 1.0f);
         std::stringstream fpsText;
         fpsText << "FPS: " << static_cast<float>(fps);
         glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), 1.0f, 1.0f, 0.0f);
         renderText(shaderProgram, characters, fpsText.str(), 10.0f, 20.0f, 0.0f, 0.5f, glm::mat4(1.0f), projection, true, 1.0f);
-        renderText(shaderProgram, characters, input_text, 80.0f, 500.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true, 1.0f);
+        renderText(shaderProgram, characters, sisendi_tekst, 80.0f, 500.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true, 1.0f);
         renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 5.0f, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f);
         renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 1000.0f, glm::vec3(0.5f, 0.0f, 0.0f), whole_scene_opacity);
         glfwSwapBuffers(window);
