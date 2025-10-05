@@ -2,23 +2,21 @@
 #include <vector>
 #include <fstream>
 
-int main() {
-
-	std::string sõna;
-	std::ifstream sonade_list("sonad.txt");
-
-	std::string kombinatsioon;
-	std::ifstream kombinatsioonide_list("kombinatsioonid.txt");
-
-	std::vector<std::vector<std::string>> kombinatsioonid_sõnad;
+float numbri_muutus(float number) {
 	
-	while (std::getline (kombinatsioonide_list, kombinatsioon)) {
-		kombinatsioonid_sõnad.push_back(kombinatsioon);
-	}
+	return number = number + 2;
 
-	for (int i : kombinatsioonid_sõnad) {
-		size_t pos = vaadeldav_sõna.find(kombinatsioon);
-		std::cout << i << std::endl;
-	}
+}
+
+int main() {
+	
+	float minu_number = 5.0;
+	
+	//while (true) {
+		numbri_muutus(minu_number);
+		
+		std::cout << minu_number << std::endl;
+	
+	//}
 
 }
