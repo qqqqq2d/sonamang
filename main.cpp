@@ -449,6 +449,7 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window);
+    //glfwSwapInterval( 0 );
     if (!gladLoadGL(glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         glfwTerminate();
@@ -587,12 +588,14 @@ int main() {
             fpsAccumulatedTime = 0.0f;
         }
 
-    	aeg = aeg + 0.007;
+    	aeg = aeg + 0.0166 * a_m;
     	vastupidine_aeg = (sekundite_arv+1) - aeg;
     	aeg_int = static_cast<int>(vastupidine_aeg);
     	std::string aeg_tekst = std::to_string(aeg_int);
     	
     	if (aeg >= sekundite_arv) {
+    		std::cout << aeg/current_time << std::endl;
+    		exit(1);
     		aeg = 0;
     		elud--;
     		kombinatsiooni_tekst = sõnavahetus();
