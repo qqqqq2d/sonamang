@@ -464,7 +464,7 @@ int main() {
         return -1;
     }
     FT_Face face;
-    if (FT_New_Face(ft, "/usr/share/fonts/truetype/gentium/Gentium-R.ttf", 0, &face)) {
+    if (FT_New_Face(ft, "./Gentium-R.ttf", 0, &face)) {
         std::cerr << "ERROR::FREETYPE: Failed to load font" << std::endl;
         glfwTerminate();
         return -1;
@@ -565,10 +565,16 @@ int main() {
     int skoor = 0;
     std::string skoor_tekst = "Skoor: " + std::to_string(skoor);
     
+    float aeg = 0;
+    float vastupidine_aeg = 0;
+    int aeg_int;
+    int sekundite_arv = 10;
+    
+    
     bool mäng_läbi = false;
     while (!glfwWindowShouldClose(window)) {
         float current_time = glfwGetTime();
-        float a_m = deltaTime * 62.5;
+        float a_m = deltaTime * 62.5; 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -580,6 +586,21 @@ int main() {
             frameCount = 0;
             fpsAccumulatedTime = 0.0f;
         }
+
+    	aeg = aeg + 0.007;
+    	vastupidine_aeg = (sekundite_arv+1) - aeg;
+    	aeg_int = static_cast<int>(vastupidine_aeg);
+    	std::string aeg_tekst = std::to_string(aeg_int);
+    	
+    	if (aeg >= sekundite_arv) {
+    		aeg = 0;
+    		elud--;
+    		kombinatsiooni_tekst = sõnavahetus();
+            kombinatsiooni_sõnad.clear();
+            sõnad_push_back_done = false;
+            vale_vastus_vilkumine = true;
+            sisendi_tekst = "";
+    	}
     
         if (!sõnad_push_back_done) {
             for (auto i : sõnad) {
@@ -602,6 +623,7 @@ int main() {
                     vastus = true;
                     skoor++;
                     skoor_tekst = "Skoor: " + std::to_string(skoor);
+                    aeg = 0;
                     break;
                 }
             }
@@ -611,9 +633,11 @@ int main() {
                 kombinatsiooni_sõnad.clear();
                 sõnad_push_back_done = false;
                 vale_vastus_vilkumine = true;
+                aeg = 0;
             }
             sisendi_tekst = "";
         }
+        
         if (elud == 0) {
             vilkumine(whole_scene_opacity, "up", 2, a_m);
             mäng_läbi = true;
@@ -642,6 +666,7 @@ int main() {
         glm::mat4 projection = glm::perspective(glm::radians(camera.fov), 800.0f / 600.0f, 0.1f, 100.0f);
         glUseProgram(shaderProgram);
         renderText(shaderProgram, characters, kombinatsiooni_tekst, -3.0f, 0.0f, 0.0f, 0.02f, view, projection, false, 1.0f, glm::vec3(1.0f, 1.0f, 01.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        renderText(shaderProgram, characters, aeg_tekst, -2.5f, -2.0f, 0.0f, 0.0125f, view, projection, false, 1.0f, glm::vec3(1.0f, 1.0f, 01.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         // Render hearts instead of elutext
         for (int i = 0; i < elud; ++i) {
             renderHeart(shaderProgram, whiteTexture, 50.0f + i * 50.0f, 565.0f, 0.9f, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f - whole_scene_opacity);
