@@ -594,8 +594,8 @@ int main() {
     	std::string aeg_tekst = std::to_string(aeg_int);
     	
     	if (aeg >= sekundite_arv) {
-    		std::cout << aeg/current_time << std::endl;
-    		exit(1);
+    		//std::cout << aeg/current_time << std::endl;
+    		//exit(1);
     		aeg = 0;
     		elud--;
     		kombinatsiooni_tekst = sõnavahetus();
