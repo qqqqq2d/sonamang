@@ -57,18 +57,18 @@ label:
 	}
 	
 	std::cout << sobivad_sõnad.size() << std::endl;
-	if (sobivad_sõnad.size() < 500) {	
+	if (sobivad_sõnad.size() < 150) {	
 		std::cout << "Uuesti proovida" << std::endl;
 		goto label;
 	}	
 		
 	sobivad_kombinatsioonid.push_back(kombinatsioon);
-	if (sobivad_kombinatsioonid.size() < 1000) {	
+	if (sobivad_kombinatsioonid.size() < 10000) {	
 		goto label;
 	}
 	
 	//Kirjutada sõnad faili
-	std::ofstream sonade_fail("sonad.txt", std::ios::app);
+	std::ofstream sonade_fail("sonad3.txt", std::ios::app);
 	for (auto i : kõik_sobivad_sõnad) {
 		sonade_fail << i << std::endl;
 	}
@@ -81,7 +81,7 @@ label:
     }
         
     //Kirjutada kombinatsioonid faili
-    std::ofstream kombinatsioonide_fail("kombinatsioonid.txt", std::ios::app);
+    std::ofstream kombinatsioonide_fail("kombinatsioonid3.txt", std::ios::app);
 	for (auto i : sobivad_kombinatsioonid) {
 		kombinatsioonide_fail << i << std::endl;
 	}

@@ -19,10 +19,10 @@
 #define NUM_POINTS 500
 
 std::string sõna;
-std::ifstream sonade_list("sonad.txt");
+std::ifstream sonade_list("sonad3.txt");
 
 std::string kombinatsioon;
-std::ifstream kombinatsioonide_list("kombinatsioonid.txt");
+std::ifstream kombinatsioonide_list("kombinatsioonid3.txt");
 
 std::vector<std::string> kombinatsioonid{};
 std::vector<std::string> sõnad{};
