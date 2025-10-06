@@ -40,13 +40,13 @@ std::string sõnavahetus() {
     return kombinatsioonid[suvaline_kombinatsioon];
 }
 
-void vilkumine(float &opacity, std::string choice, float multiplier) {
+void vilkumine(float &opacity, std::string choice, float multiplier, float a_m) {
 	//               
 	
 	if (choice == "up")
-		opacity += 0.01f * multiplier;
+		opacity += 0.01f * multiplier * a_m;
 	else {
-		opacity -= 0.01f * multiplier; 
+		opacity -= 0.01f * multiplier * a_m; 
 	}
 }
 
@@ -175,64 +175,68 @@ bool text_entered = false;
 std::string kombinatsiooni_tekst = sõnavahetus();
 //std::string kombinatsiooni_tekst = "KAL";
 
-void processInput(GLFWwindow* window) {
-    float cameraSpeed = 2.5f * deltaTime;
+void processInput(GLFWwindow* window, bool mäng_läbi) {
     
-    for (int i = 0; i < 26; i++) {
-        int key = key_map[i].glfw_key;
-        if (glfwGetKey(window, key) == GLFW_PRESS && !täht_vajutatud[i]) {
-            täht_vajutatud[i] = true;
-            sisendi_tekst += key_map[i].character;
-        }
-        if (glfwGetKey(window, key) == GLFW_RELEASE) {
-            täht_vajutatud[i] = false;
-        }
-    }
-    if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_PRESS && !täht_vajutatud[26]) {
-        täht_vajutatud[26] = true;
-        sisendi_tekst += "Ö";
-    }
-    if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_RELEASE) {
-        täht_vajutatud[26] = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS && !täht_vajutatud[27]) {
-        täht_vajutatud[27] = true;
-        sisendi_tekst += "Ü";
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_RELEASE) {
-        täht_vajutatud[27] = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS && !täht_vajutatud[28]) {
-        täht_vajutatud[28] = true;
-        sisendi_tekst += "Õ";
-    }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE) {
-        täht_vajutatud[28] = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_APOSTROPHE) == GLFW_PRESS && !täht_vajutatud[29]) {
-        täht_vajutatud[29] = true;
-        sisendi_tekst += "Ä";
-    }
-    if (glfwGetKey(window, GLFW_KEY_APOSTROPHE) == GLFW_RELEASE) {
-        täht_vajutatud[29] = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !täht_vajutatud[30]) {
-        täht_vajutatud[30] = true;
-        sisendi_tekst += "Š";
-    }
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE) {
-        täht_vajutatud[30] = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !täht_vajutatud[31]) {
-        täht_vajutatud[31] = true;
-        sisendi_tekst += "Ž";
-    }
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
-        täht_vajutatud[31] = false;
-    }
-    if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
-        sisendi_tekst = "";
-    }
+    if (!mäng_läbi) {
+		float cameraSpeed = 2.5f * deltaTime;
+		
+		for (int i = 0; i < 26; i++) {
+		    int key = key_map[i].glfw_key;
+		    if (glfwGetKey(window, key) == GLFW_PRESS && !täht_vajutatud[i]) {
+		        täht_vajutatud[i] = true;
+		        sisendi_tekst += key_map[i].character;
+		    }
+		    if (glfwGetKey(window, key) == GLFW_RELEASE) {
+		        täht_vajutatud[i] = false;
+		    }
+		}
+		if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_PRESS && !täht_vajutatud[26]) {
+		    täht_vajutatud[26] = true;
+		    sisendi_tekst += "Ö";
+		}
+		if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_RELEASE) {
+		    täht_vajutatud[26] = false;
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS && !täht_vajutatud[27]) {
+		    täht_vajutatud[27] = true;
+		    sisendi_tekst += "Ü";
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_RELEASE) {
+		    täht_vajutatud[27] = false;
+		}
+		if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS && !täht_vajutatud[28]) {
+		    täht_vajutatud[28] = true;
+		    sisendi_tekst += "Õ";
+		}
+		if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_RELEASE) {
+		    täht_vajutatud[28] = false;
+		}
+		if (glfwGetKey(window, GLFW_KEY_APOSTROPHE) == GLFW_PRESS && !täht_vajutatud[29]) {
+		    täht_vajutatud[29] = true;
+		    sisendi_tekst += "Ä";
+		}
+		if (glfwGetKey(window, GLFW_KEY_APOSTROPHE) == GLFW_RELEASE) {
+		    täht_vajutatud[29] = false;
+		}
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !täht_vajutatud[30]) {
+		    täht_vajutatud[30] = true;
+		    sisendi_tekst += "Š";
+		}
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE) {
+		    täht_vajutatud[30] = false;
+		}
+		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !täht_vajutatud[31]) {
+		    täht_vajutatud[31] = true;
+		    sisendi_tekst += "Ž";
+		}
+		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
+		    täht_vajutatud[31] = false;
+		}
+		if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
+		    sisendi_tekst = "";
+		}
+	}
+	
     if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && !ENTER_PRESSED) {
         ENTER_PRESSED = true;
         text_entered = true;
@@ -245,87 +249,89 @@ void processInput(GLFWwindow* window) {
         glfwSetWindowShouldClose(window, true);
 }
 
-void renderText(unsigned int shaderProgram, std::map<FT_UInt, Character>& characters, std::string text, float x, float y, float z, float scale, glm::mat4 view, glm::mat4 projection, bool is2D, float opacity) {
-    glUseProgram(shaderProgram);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
-    glm::mat4 proj = is2D ? glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f) : projection;
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
-    glUniform1f(glGetUniformLocation(shaderProgram, "opacity"), opacity);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    if (is2D) {
-        glDisable(GL_DEPTH_TEST);
-    } else {
-        glEnable(GL_DEPTH_TEST);
-    }
-    unsigned int VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    std::vector<FT_UInt> codePoints = decodeUTF8(text);
-    float x_offset = x;
-    for (FT_UInt c : codePoints) {
-        auto it = characters.find(c);
-        if (it == characters.end()) {
-            std::cerr << "WARNING: Glyph not found for code point " << c << std::endl;
-            continue;
-        }
-        Character ch = it->second;
-        float xpos = x_offset + ch.bearing.x * scale;
-        float ypos = is2D ? (600.0f - y - (ch.size.y - ch.bearing.y) * scale) : (y - (ch.size.y - ch.bearing.y) * scale);
-        float w = ch.size.x * scale;
-        float h = ch.size.y * scale;
-        float vertices[6][4] = {
-            { xpos,     ypos + h, 0.0f, 0.0f },
-            { xpos,     ypos,     0.0f, 1.0f },
-            { xpos + w, ypos,     1.0f, 1.0f },
-            { xpos,     ypos + h, 0.0f, 0.0f },
-            { xpos + w, ypos,     1.0f, 1.0f },
-            { xpos + w, ypos + h, 1.0f, 0.0f }
-        };
-        if (!is2D) {
-            int numLayers = 5;
-            float depthStep = 0.05f;
-            for (int i = 0; i < numLayers; ++i) {
-                float depth = z - i * depthStep;
-                float colorFactor = 1.0f - (i * 0.15f);
-                glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), colorFactor, colorFactor, colorFactor);
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(0.0f, 0.0f, depth));
-                glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-                glBindTexture(GL_TEXTURE_2D, ch.textureID);
-                glBindVertexArray(VAO);
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-                glDrawArrays(GL_TRIANGLES, 0, 6);
-                glBindVertexArray(0);
-            }
-        } else {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-            glBindTexture(GL_TEXTURE_2D, ch.textureID);
-            glBindVertexArray(VAO);
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-            glBindVertexArray(0);
-        }
-        x_offset += (ch.advance >> 6) * scale;
-    }
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDisable(GL_BLEND);
+void renderText(unsigned int shaderProgram, std::map<FT_UInt, Character>& characters, std::string text, float x, float y, float z, float scale, glm::mat4 view, glm::mat4 projection, bool is2D, float opacity, bool mäng_läbi = false) {
+    if (!mäng_läbi) {
+		glUseProgram(shaderProgram);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glm::mat4 proj = is2D ? glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f) : projection;
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
+		glUniform1f(glGetUniformLocation(shaderProgram, "opacity"), opacity);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		if (is2D) {
+		    glDisable(GL_DEPTH_TEST);
+		} else {
+		    glEnable(GL_DEPTH_TEST);
+		}
+		unsigned int VAO, VBO;
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		std::vector<FT_UInt> codePoints = decodeUTF8(text);
+		float x_offset = x;
+		for (FT_UInt c : codePoints) {
+		    auto it = characters.find(c);
+		    if (it == characters.end()) {
+		        std::cerr << "WARNING: Glyph not found for code point " << c << std::endl;
+		        continue;
+		    }
+		    Character ch = it->second;
+		    float xpos = x_offset + ch.bearing.x * scale;
+		    float ypos = is2D ? (600.0f - y - (ch.size.y - ch.bearing.y) * scale) : (y - (ch.size.y - ch.bearing.y) * scale);
+		    float w = ch.size.x * scale;
+		    float h = ch.size.y * scale;
+		    float vertices[6][4] = {
+		        { xpos,     ypos + h, 0.0f, 0.0f },
+		        { xpos,     ypos,     0.0f, 1.0f },
+		        { xpos + w, ypos,     1.0f, 1.0f },
+		        { xpos,     ypos + h, 0.0f, 0.0f },
+		        { xpos + w, ypos,     1.0f, 1.0f },
+		        { xpos + w, ypos + h, 1.0f, 0.0f }
+		    };
+		    if (!is2D) {
+		        int numLayers = 5;
+		        float depthStep = 0.05f;
+		        for (int i = 0; i < numLayers; ++i) {
+		            float depth = z - i * depthStep;
+		            float colorFactor = 1.0f - (i * 0.15f);
+		            glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), colorFactor, colorFactor, colorFactor);
+		            glm::mat4 model = glm::mat4(1.0f);
+		            model = glm::translate(model, glm::vec3(0.0f, 0.0f, depth));
+		            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		            glBindTexture(GL_TEXTURE_2D, ch.textureID);
+		            glBindVertexArray(VAO);
+		            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		            glBindBuffer(GL_ARRAY_BUFFER, 0);
+		            glDrawArrays(GL_TRIANGLES, 0, 6);
+		            glBindVertexArray(0);
+		        }
+		    } else {
+		        glm::mat4 model = glm::mat4(1.0f);
+		        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		        glBindTexture(GL_TEXTURE_2D, ch.textureID);
+		        glBindVertexArray(VAO);
+		        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		        glBindBuffer(GL_ARRAY_BUFFER, 0);
+		        glDrawArrays(GL_TRIANGLES, 0, 6);
+		        glBindVertexArray(0);
+		    }
+		    x_offset += (ch.advance >> 6) * scale;
+		}
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(1, &VBO);
+		glDisable(GL_BLEND);
+	}
 }
 
 void renderSquare(unsigned int shaderProgram, unsigned int whiteTexture, float x, float y, float size, glm::vec3 color, float opacity) {
@@ -496,13 +502,33 @@ int main() {
     float whole_scene_opacity = 0.0f;
     bool sõnad_push_back_done = false;
     
-    //Vilkumine muutujad
+    //Vilkumise muutujad
     bool opacity_up = true;
     bool vale_vastus_vilkumine = false;
     
+    auto terve_vilkumine = []() -> void {
+    	std::cout << "hello" << std::endl;
+    };
+    
+    int skoor = 0;
+    std::string skoor_tekst = "Skoor: " + std::to_string(skoor);
+    
+    bool mäng_läbi = false;    
     while (!glfwWindowShouldClose(window)) {
-    	totalFrames++;
-    	//std::cout << totalFrames << std::endl;
+    	
+    	float current_time = glfwGetTime();
+        float a_m = deltaTime * 62.5;
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        fpsAccumulatedTime += deltaTime;
+        frameCount++;
+        
+        if (fpsAccumulatedTime >= fpsUpdateInterval) {
+            fps = frameCount / fpsAccumulatedTime;
+            frameCount = 0;
+            fpsAccumulatedTime = 0.0f;
+        }
     
         if (!sõnad_push_back_done) {
             for (auto i : sõnad) {
@@ -524,6 +550,8 @@ int main() {
                     kombinatsiooni_sõnad.clear();
                     sõnad_push_back_done = false;
                     vastus = true;
+                    skoor++;
+                    skoor_tekst = "Skoor: " + std::to_string(skoor);
                     break;
                 }
             }
@@ -541,17 +569,18 @@ int main() {
             sisendi_tekst = "";
         }
         if (elud == 0) {
-       		       
+       		vilkumine(whole_scene_opacity, "up", 2, a_m);
+       		mäng_läbi = true;     
         }
         
         if (vale_vastus_vilkumine) {
         	if (opacity_up)            	        	
-            	vilkumine(whole_scene_opacity, "up", 5);
+            	vilkumine(whole_scene_opacity, "up", 10, a_m);
             if (whole_scene_opacity >= 0.75f) {
             	opacity_up = false;
             }
             if (!opacity_up) {
-            	vilkumine(whole_scene_opacity, "down", 0.7);
+            	vilkumine(whole_scene_opacity, "down", 1.4, a_m);
             }
             if (whole_scene_opacity <= 0) {
             	whole_scene_opacity = 0.0f;
@@ -559,23 +588,8 @@ int main() {
             	opacity_up = true;
             }
         }
-         
- 		std::cout << whole_scene_opacity << std::endl;
- 		
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-        fpsAccumulatedTime += deltaTime;
-        frameCount++;
         
-        //std::cout << currentFrame << std::endl;
-        
-        if (fpsAccumulatedTime >= fpsUpdateInterval) {
-            fps = frameCount / fpsAccumulatedTime;
-            frameCount = 0;
-            fpsAccumulatedTime = 0.0f;
-        }
-        processInput(window);
+        processInput(window, mäng_läbi);
         glClearColor(0.0f, 0.0f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::mat4 view = camera.getViewMatrix();
@@ -587,10 +601,17 @@ int main() {
         std::stringstream fpsText;
         fpsText << "FPS: " << static_cast<float>(fps);
         glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), 1.0f, 1.0f, 0.0f);
-        renderText(shaderProgram, characters, fpsText.str(), 10.0f, 20.0f, 0.0f, 0.5f, glm::mat4(1.0f), projection, true, 1.0f);
+        //renderText(shaderProgram, characters, fpsText.str(), 10.0f, 20.0f, 0.0f, 0.5f, glm::mat4(1.0f), projection, true, 1.0f);
         renderText(shaderProgram, characters, sisendi_tekst, 80.0f, 500.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true, 1.0f);
+        renderText(shaderProgram, characters, skoor_tekst, 600.0f, 28.0f, 100.0f, 0.75f, glm::mat4(1.0f), projection, true, 1.0f);
+        
         renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 5.0f, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f);
         renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 1000.0f, glm::vec3(0.5f, 0.0f, 0.0f), whole_scene_opacity);
+        
+        glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), 1.0f, 1.0f, 1.0f);
+
+        renderText(shaderProgram, characters, "MÄNG LÄBI", 200.0f, 300.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true, 1.0f, !mäng_läbi);
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
