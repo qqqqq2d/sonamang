@@ -182,6 +182,25 @@ bool lastCharIsMultibyte(const std::string& s) {
     return charLen > 1;
 }
 
+void tervik_vale_vilkumine(bool &vale_vastus_vilkumine, bool &opacity_up, float &whole_scene_opacity, float &a_m) {
+	if (vale_vastus_vilkumine) {
+		if (opacity_up)
+            vilkumine(whole_scene_opacity, "up", 10, a_m);
+        if (whole_scene_opacity >= 0.75f) {
+        	opacity_up = false;
+        }
+        if (!opacity_up) {
+            vilkumine(whole_scene_opacity, "down", 1.4, a_m);
+        }
+        if (whole_scene_opacity <= 0) {
+        	whole_scene_opacity = 0.0f;
+            vale_vastus_vilkumine = false;
+            opacity_up = true;
+		}
+	}
+	
+}
+
 std::vector<bool> täht_vajutatud(32, false);
 std::string sisendi_tekst = "";
 bool SPACE_PRESSED = false;
@@ -677,21 +696,7 @@ int main() {
             mäng_läbi = true;
         }
         
-        if (vale_vastus_vilkumine) {
-            if (opacity_up)
-                vilkumine(whole_scene_opacity, "up", 10, a_m);
-            if (whole_scene_opacity >= 0.75f) {
-                opacity_up = false;
-            }
-            if (!opacity_up) {
-                vilkumine(whole_scene_opacity, "down", 1.4, a_m);
-            }
-            if (whole_scene_opacity <= 0) {
-                whole_scene_opacity = 0.0f;
-                vale_vastus_vilkumine = false;
-                opacity_up = true;
-            }
-        }
+        tervik_vale_vilkumine(vale_vastus_vilkumine, opacity_up, whole_scene_opacity, a_m);
         
         processInput(window, mäng_läbi);
         glClearColor(0.0f, 0.0f, 0.5f, 1.0f);
@@ -708,11 +713,11 @@ int main() {
         std::stringstream fpsText;
         fpsText << "FPS: " << static_cast<float>(fps);
         renderText(shaderProgram, characters, sisendi_tekst, 80.0f, 500.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.5f));
-        renderText(shaderProgram, characters, skoor_tekst, 600.0f, 48.0f, 100.0f, 0.75f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(1.0f, 1.5f, 1.0f), glm::vec3(1.02f, 1.0f, 0.9f));
+        renderText(shaderProgram, characters, skoor_tekst, 600.0f, 48.0f, 100.0f, 0.75f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.02f, 1.0f, 0.9f));
         renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 5.0f, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f);
         renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 1000.0f, glm::vec3(0.5f, 0.0f, 0.0f), whole_scene_opacity);
         renderText(shaderProgram, characters, "MÄNG LÄBI", 200.0f, 300.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f), !mäng_läbi);
-        renderText(shaderProgram, characters, skoor_lõpp_tekst, 270.0f, 380.0f, 100.0f, 0.75f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(1.0f, 1.5f, 1.0f), glm::vec3(1.02f, 1.0f, 0.9f), !mäng_läbi);
+        renderText(shaderProgram, characters, skoor_lõpp_tekst, 270.0f, 380.0f, 100.0f, 0.75f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.02f, 1.0f, 0.9f), !mäng_läbi);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
