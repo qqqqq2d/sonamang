@@ -15,6 +15,7 @@
 #include <set>
 #include <map>
 #include <math.h>
+#include <cstdint>
 
 #define NUM_POINTS 500
 
@@ -164,10 +165,28 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     camera.updateCameraVectors();
 }
 
+
+bool lastCharIsMultibyte(const std::string& s) {
+    if (s.empty()) return false;
+
+    // Walk backwards to find the start of the last UTF-8 character
+    int i = s.size() - 1;
+    // Move left while the byte is a UTF-8 continuation byte (10xxxxxx)
+    while (i > 0 && (static_cast<unsigned char>(s[i]) & 0xC0) == 0x80)
+        --i;
+
+    // Length of last character in bytes
+    size_t charLen = s.size() - i;
+
+    // If more than one byte, it's a multibyte character (non-ASCII)
+    return charLen > 1;
+}
+
 std::vector<bool> täht_vajutatud(32, false);
 std::string sisendi_tekst = "";
 bool SPACE_PRESSED = false;
 bool ENTER_PRESSED = false;
+bool BACKSPACE_PRESSED = false;
 bool text_entered = false;
 std::string kombinatsiooni_tekst = sõnavahetus();
 
@@ -227,8 +246,18 @@ void processInput(GLFWwindow* window, bool mäng_läbi) {
         if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
             täht_vajutatud[31] = false;
         }
-        if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) {
-            sisendi_tekst = "";
+        if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS && !BACKSPACE_PRESSED) {
+        	int n = 1;
+        	
+            if (!sisendi_tekst.empty()) {
+            	if (lastCharIsMultibyte(sisendi_tekst))
+            		n = 2;
+            	sisendi_tekst.erase(sisendi_tekst.length() - n);
+            }
+            BACKSPACE_PRESSED = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_RELEASE) {
+            BACKSPACE_PRESSED = false;
         }
     }
     
@@ -565,6 +594,7 @@ int main() {
     
     int skoor = 0;
     std::string skoor_tekst = "Skoor: " + std::to_string(skoor);
+    std::string skoor_lõpp_tekst = "Sinu skoor: " + std::to_string(skoor);
     
     float aeg = 0;
     float vastupidine_aeg = 0;
@@ -593,7 +623,7 @@ int main() {
     	aeg_int = static_cast<int>(vastupidine_aeg);
     	std::string aeg_tekst = std::to_string(aeg_int);
     	
-    	if (aeg >= sekundite_arv) {
+    	if (aeg >= sekundite_arv && !mäng_läbi) {
     		//std::cout << aeg/current_time << std::endl;
     		//exit(1);
     		aeg = 0;
@@ -626,6 +656,7 @@ int main() {
                     vastus = true;
                     skoor++;
                     skoor_tekst = "Skoor: " + std::to_string(skoor);
+                    skoor_lõpp_tekst = "Sinu skoor: " + std::to_string(skoor);
                     aeg = 0;
                     break;
                 }
@@ -669,7 +700,7 @@ int main() {
         glm::mat4 projection = glm::perspective(glm::radians(camera.fov), 800.0f / 600.0f, 0.1f, 100.0f);
         glUseProgram(shaderProgram);
         renderText(shaderProgram, characters, kombinatsiooni_tekst, -3.0f, 0.0f, 0.0f, 0.02f, view, projection, false, 1.0f, glm::vec3(1.0f, 1.0f, 01.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        renderText(shaderProgram, characters, aeg_tekst, -2.5f, -2.0f, 0.0f, 0.0125f, view, projection, false, 1.0f, glm::vec3(1.0f, 1.0f, 01.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        renderText(shaderProgram, characters, aeg_tekst, -2.4f, 1.0f, 0.0f, 0.01f, view, projection, false, 1.0f, glm::vec3(1.0f, 1.0f, 01.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         // Render hearts instead of elutext
         for (int i = 0; i < elud; ++i) {
             renderHeart(shaderProgram, whiteTexture, 50.0f + i * 50.0f, 565.0f, 0.9f, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f - whole_scene_opacity);
@@ -681,6 +712,7 @@ int main() {
         renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 5.0f, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f);
         renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 1000.0f, glm::vec3(0.5f, 0.0f, 0.0f), whole_scene_opacity);
         renderText(shaderProgram, characters, "MÄNG LÄBI", 200.0f, 300.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f), !mäng_läbi);
+        renderText(shaderProgram, characters, skoor_lõpp_tekst, 270.0f, 380.0f, 100.0f, 0.75f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(1.0f, 1.5f, 1.0f), glm::vec3(1.02f, 1.0f, 0.9f), !mäng_läbi);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
