@@ -201,6 +201,15 @@ void tervik_vale_vilkumine(bool &vale_vastus_vilkumine, bool &opacity_up, float 
 	
 }
 
+void vale_vastus_muutujad(std::string &kombinatsiooni_tekst, std::vector<std::string> &kombinatsiooni_sõnad, bool &sõnad_push_back_done, float &aeg, int &elud, bool &vale_vastus_vilkumine) {	
+	elud--;
+	kombinatsiooni_tekst = sõnavahetus();
+	kombinatsiooni_sõnad.clear();
+	sõnad_push_back_done = false;
+	vale_vastus_vilkumine = true;
+	aeg = 0;	
+}
+
 std::vector<bool> täht_vajutatud(32, false);
 std::string sisendi_tekst = "";
 bool SPACE_PRESSED = false;
@@ -672,21 +681,26 @@ int main() {
                     kombinatsiooni_tekst = sõnavahetus();
                     kombinatsiooni_sõnad.clear();
                     sõnad_push_back_done = false;
+                    aeg = 0;
+                    
                     vastus = true;
                     skoor++;
                     skoor_tekst = "Skoor: " + std::to_string(skoor);
                     skoor_lõpp_tekst = "Sinu skoor: " + std::to_string(skoor);
-                    aeg = 0;
                     break;
                 }
             }
             if (sisendi_tekst != "" && !vastus) {
+                /*
                 elud--;
                 kombinatsiooni_tekst = sõnavahetus();
                 kombinatsiooni_sõnad.clear();
                 sõnad_push_back_done = false;
                 vale_vastus_vilkumine = true;
                 aeg = 0;
+                */
+                vale_vastus_muutujad(kombinatsiooni_tekst, kombinatsiooni_sõnad, sõnad_push_back_done, aeg, elud, vale_vastus_vilkumine);
+                
             }
             sisendi_tekst = "";
         }
@@ -699,13 +713,13 @@ int main() {
         tervik_vale_vilkumine(vale_vastus_vilkumine, opacity_up, whole_scene_opacity, a_m);
         
         processInput(window, mäng_läbi);
-        glClearColor(0.0f, 0.0f, 0.5f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::mat4 view = camera.getViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.fov), 800.0f / 600.0f, 0.1f, 100.0f);
         glUseProgram(shaderProgram);
-        renderText(shaderProgram, characters, kombinatsiooni_tekst, -3.0f, 0.0f, 0.0f, 0.02f, view, projection, false, 1.0f, glm::vec3(1.0f, 1.0f, 01.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        renderText(shaderProgram, characters, aeg_tekst, -2.4f, 1.0f, 0.0f, 0.01f, view, projection, false, 1.0f, glm::vec3(1.0f, 1.0f, 01.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        renderText(shaderProgram, characters, kombinatsiooni_tekst, -3.0f, 0.0f, 0.0f, 0.05f, view, projection, false, 1.0f, glm::vec3(1.0f, 1.0f, 01.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        renderText(shaderProgram, characters, aeg_tekst, -2.4f, 2.0f, 0.0f, 0.01f, view, projection, false, 1.0f, glm::vec3(1.0f, 1.0f, 01.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         // Render hearts instead of elutext
         for (int i = 0; i < elud; ++i) {
             renderHeart(shaderProgram, whiteTexture, 50.0f + i * 50.0f, 565.0f, 0.9f, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f - whole_scene_opacity);
@@ -714,7 +728,7 @@ int main() {
         fpsText << "FPS: " << static_cast<float>(fps);
         renderText(shaderProgram, characters, sisendi_tekst, 80.0f, 500.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.5f));
         renderText(shaderProgram, characters, skoor_tekst, 600.0f, 48.0f, 100.0f, 0.75f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.02f, 1.0f, 0.9f));
-        renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 5.0f, glm::vec3(1.0f, 0.0f, 0.0f), 0.5f);
+        renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 5.0f, glm::vec3(1.0f, 0.0f, 0.0f), 0.25f);
         renderSquare(shaderProgram, whiteTexture, 400.0f, 300.0f, 1000.0f, glm::vec3(0.5f, 0.0f, 0.0f), whole_scene_opacity);
         renderText(shaderProgram, characters, "MÄNG LÄBI", 200.0f, 300.0f, 100.0f, 1.5f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f), !mäng_läbi);
         renderText(shaderProgram, characters, skoor_lõpp_tekst, 270.0f, 380.0f, 100.0f, 0.75f, glm::mat4(1.0f), projection, true, 1.0f, glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.02f, 1.0f, 0.9f), !mäng_läbi);
